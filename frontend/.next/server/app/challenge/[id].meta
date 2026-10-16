@@ -1,0 +1,41 @@
+{
+  "status": 200,
+  "headers": {
+    "link": "</_next/static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\"",
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/challenge/layout,_N_T_/challenge/[id]/layout,_N_T_/challenge/[id]/page"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/challenge/$d$id/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49248,
+            "slots": {
+              "children": {
+                "hints": 49312,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/becfb83a1693d90b69f775a118f3c03f5c39e8e24423ef05e9aa76b7219f2d28/$/challenge/[id]",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/challenge/[id]/page"
+    },
+    "isFallback": true
+  }
+}

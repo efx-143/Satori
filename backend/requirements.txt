@@ -1,6 +1,7 @@
 # Web framework
 Flask>=3.0,<4.0
 Flask-SQLAlchemy>=3.1,<4.0
+Flask-Cors>=4.0
 
 # ORM
 SQLAlchemy>=2.0,<3.0

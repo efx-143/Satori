@@ -7,6 +7,7 @@ import logging
 
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 db = SQLAlchemy()
 logger = logging.getLogger(__name__)
@@ -15,9 +16,11 @@ logger = logging.getLogger(__name__)
 def create_app(config_object: str = "app.config.DevelopmentConfig") -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_object)
+    app.url_map.strict_slashes = False   # stop 308 redirects on missing trailing slash
 
     # ── Extensions ────────────────────────────────────────────────────────────
     db.init_app(app)
+    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])  # allow Next.js dev
 
     # ── Database tables ───────────────────────────────────────────────────────
     with app.app_context():
