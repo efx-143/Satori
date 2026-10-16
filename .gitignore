@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+.venv/
+venv/
+env/
+
+# Flask / SQLAlchemy
+instance/
+*.db
+*.sqlite3
+*.sqlite
+
+# Environment variables — NEVER commit secrets
+.env
+.env.*
+!.env.example
+
+# Docker build artifacts
+sandbox/__pycache__/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

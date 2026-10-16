@@ -1,0 +1,144 @@
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "defaultErrnoRet": 1,
+  "archMap": [
+    {
+      "architecture": "SCMP_ARCH_X86_64",
+      "subArchitectures": ["SCMP_ARCH_X86", "SCMP_ARCH_X32"]
+    },
+    {
+      "architecture": "SCMP_ARCH_AARCH64",
+      "subArchitectures": ["SCMP_ARCH_ARM"]
+    }
+  ],
+  "syscalls": [
+    {
+      "comment": "── Core process ──",
+      "names": [
+        "read", "write", "close", "fstat", "lstat", "stat",
+        "mmap", "mprotect", "munmap", "brk",
+        "rt_sigaction", "rt_sigprocmask", "rt_sigreturn", "sigaltstack",
+        "ioctl", "pread64", "pwrite64", "readv", "writev",
+        "access", "pipe", "pipe2",
+        "select", "poll", "epoll_create", "epoll_create1", "epoll_ctl", "epoll_wait",
+        "dup", "dup2", "dup3",
+        "nanosleep", "getitimer", "alarm", "setitimer",
+        "getpid", "gettid", "getppid", "getuid", "getgid",
+        "geteuid", "getegid", "getgroups",
+        "exit", "exit_group", "wait4", "waitid",
+        "arch_prctl", "prctl",
+        "set_tid_address", "set_robust_list", "get_robust_list",
+        "futex", "futex_waitv",
+        "getcwd", "chdir",
+        "uname", "sysinfo",
+        "getrandom", "getentropy",
+        "rseq"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "comment": "── Filesystem (read-only) ──",
+      "names": [
+        "open", "openat", "openat2",
+        "creat",
+        "unlink", "unlinkat",
+        "rename", "renameat", "renameat2",
+        "mkdir", "mkdirat",
+        "rmdir",
+        "link", "linkat",
+        "symlink", "symlinkat",
+        "readlink", "readlinkat",
+        "chmod", "fchmod", "fchmodat",
+        "truncate", "ftruncate",
+        "fallocate",
+        "getdents", "getdents64",
+        "lseek", "llseek",
+        "fsync", "fdatasync",
+        "flock",
+        "statfs", "fstatfs",
+        "utimes", "utimensat", "futimens"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "comment": "── Memory & threads (Python needs clone for threads but NOT fork) ──",
+      "names": [
+        "madvise", "mincore", "msync", "mlock", "mlock2", "munlock",
+        "mremap",
+        "memfd_create",
+        "clone3",
+        "prlimit64",
+        "sched_getaffinity", "sched_setaffinity",
+        "sched_getparam", "sched_getscheduler",
+        "sched_yield",
+        "kill", "tgkill", "tkill"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "comment": "── clone: allow only CLONE_THREAD (no fork/exec of new processes) ──",
+      "names": ["clone"],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 0,
+          "value": 268435456,
+          "valueTwo": 268435456,
+          "op": "SCMP_CMP_MASKED_EQ"
+        }
+      ]
+    },
+    {
+      "comment": "── Signal delivery helpers ──",
+      "names": [
+        "signalfd", "signalfd4", "eventfd", "eventfd2",
+        "timerfd_create", "timerfd_settime", "timerfd_gettime"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "comment": "── /proc self inspection (needed by CPython) ──",
+      "names": [
+        "getrlimit", "setrlimit",
+        "times", "gettimeofday", "clock_gettime", "clock_getres",
+        "clock_nanosleep"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "comment": "── EXPLICITLY BLOCKED: network ──",
+      "names": [
+        "socket", "connect", "accept", "accept4",
+        "bind", "listen",
+        "sendto", "sendmsg", "sendmmsg",
+        "recvfrom", "recvmsg", "recvmmsg",
+        "getsockname", "getpeername",
+        "getsockopt", "setsockopt",
+        "shutdown",
+        "socketpair",
+        "socketcall"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 13
+    },
+    {
+      "comment": "── EXPLICITLY BLOCKED: process spawning ──",
+      "names": [
+        "fork", "vfork",
+        "execve", "execveat",
+        "ptrace",
+        "mount", "umount2", "pivot_root",
+        "chroot",
+        "unshare",
+        "setns",
+        "perf_event_open",
+        "bpf",
+        "userfaultfd",
+        "kcmp",
+        "process_vm_readv", "process_vm_writev"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1
+    }
+  ]
+}
