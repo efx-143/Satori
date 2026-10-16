@@ -1,7 +1,12 @@
 "use client";
 // components/SubmissionFeedback.tsx
-// Handles the full judging response: outcome badge, AI explanation,
-// test case results, and a progressive 3-hint ladder revealed one at a time.
+// Phase 5: Feedback & Hint UI Component — MXESA [26] Neo-Brutalist Theme
+// Handles response from POST /api/v1/submissions:
+//   1. Displays canonical outcome: passed, wrong_output, runtime_error, timeout
+//   2. Displays plain-language AI explanation
+//   3. Hint System: "Stuck? Get a Hint" calling POST /api/v1/hints/<sub_id>
+//      revealing the 3 progressive hints ONE BY ONE per click (never all at once)
+//   4. Highlights recurring mistake alerts with "Practice Next" recommendation
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,81 +22,86 @@ import {
   RotateCcw,
   Trophy,
   AlertTriangle,
+  Loader2,
+  Sparkles,
+  Info,
+  Terminal,
 } from "lucide-react";
 
-// ── Outcome config ────────────────────────────────────────────────────────
+// ── Outcome Badges & Styles (MXESA Neo-Brutalist Theme) ───────────────────
 
-const OUTCOME_CONFIG = {
+interface OutcomeStyle {
+  icon: typeof CheckCircle2;
+  label: string;
+  badgeClass: string;
+}
+
+const OUTCOME_CONFIG: Record<string, OutcomeStyle> = {
   passed: {
     icon: CheckCircle2,
-    label: "All Tests Passed!",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10 border-emerald-500/30",
-    glow: "shadow-[0_0_20px_rgba(16,185,129,0.15)]",
+    label: "ALL TESTS PASSED",
+    badgeClass: "bg-[#E8E6DB] text-black border-2 border-black shadow-[4px_4px_0px_#000]",
+  },
+  wrong_output: {
+    icon: XCircle,
+    label: "WRONG OUTPUT",
+    badgeClass: "bg-[#DE6557] text-black border-2 border-black shadow-[4px_4px_0px_#000]",
   },
   failed: {
     icon: XCircle,
-    label: "Wrong Output",
-    color: "text-rose-400",
-    bg: "bg-rose-500/10 border-rose-500/30",
-    glow: "shadow-[0_0_20px_rgba(244,63,94,0.15)]",
+    label: "WRONG OUTPUT",
+    badgeClass: "bg-[#DE6557] text-black border-2 border-black shadow-[4px_4px_0px_#000]",
+  },
+  runtime_error: {
+    icon: Zap,
+    label: "RUNTIME ERROR",
+    badgeClass: "bg-[#E5A83B] text-black border-2 border-black shadow-[4px_4px_0px_#000]",
   },
   error: {
     icon: Zap,
-    label: "Runtime Error",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/30",
-    glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]",
+    label: "RUNTIME ERROR",
+    badgeClass: "bg-[#E5A83B] text-black border-2 border-black shadow-[4px_4px_0px_#000]",
   },
   timeout: {
     icon: Clock,
-    label: "Time Limit Exceeded",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10 border-orange-500/30",
-    glow: "shadow-[0_0_20px_rgba(249,115,22,0.15)]",
+    label: "EXECUTION TIMEOUT",
+    badgeClass: "bg-[#DE6557] text-black border-2 border-black shadow-[4px_4px_0px_#000]",
   },
-} as const;
-
-const MISTAKE_LABELS: Record<string, string> = {
-  off_by_one:            "Off-by-one error",
-  unhandled_short_input: "Unhandled short/empty input",
-  print_not_return:      "print() instead of return",
-  boundary_comparison:   "Incorrect boundary comparison",
-  mutates_input:         "Mutates the input argument",
 };
 
-// ── Sub-components ────────────────────────────────────────────────────────
+const MISTAKE_LABELS: Record<string, string> = {
+  off_by_one: "Off-by-one indexing error",
+  unhandled_short_input: "Unhandled empty/short input",
+  print_not_return: "print() instead of return",
+  boundary_comparison: "Boundary comparison (< vs <=)",
+  mutates_input: "Mutates input argument in-place",
+};
 
-function OutcomeBadge({ outcome }: { outcome: keyof typeof OUTCOME_CONFIG }) {
-  const cfg = OUTCOME_CONFIG[outcome];
-  const Icon = cfg.icon;
-  return (
-    <div className={`flex items-center gap-3 rounded-xl border p-4 ${cfg.bg} ${cfg.glow}`}>
-      <Icon className={`h-7 w-7 flex-shrink-0 ${cfg.color}`} />
-      <span className={`text-xl font-bold ${cfg.color}`}>{cfg.label}</span>
-    </div>
-  );
-}
+const HINT_TIER_NAMES = [
+  "Hint 1: Conceptual Direction",
+  "Hint 2: Execution & Edge Trace",
+  "Hint 3: Targeted Guardrail",
+];
 
-function TestProgress({
-  passed,
-  total,
-}: {
-  passed: number;
-  total: number;
-}) {
+// ── Test Progress Bar ──────────────────────────────────────────────────────
+
+function TestProgress({ passed, total }: { passed: number; total: number }) {
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="text-slate-400">Tests passed</span>
-        <span className="font-mono font-semibold text-slate-200">
-          {passed} / {total}
+    <div className="space-y-1.5 border-2 border-black bg-[#1A1A1A] p-4 shadow-[3px_3px_0px_#000]">
+      <div className="flex items-center justify-between text-xs font-mono">
+        <span className="font-bold text-slate-300 uppercase tracking-wider">
+          TEST RUNS PASSED
+        </span>
+        <span className="font-bold text-[#DE6557]">
+          {passed} / {total} ({pct}%)
         </span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-700">
+      <div className="h-3 w-full border-2 border-black bg-[#141414] overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-emerald-500 transition-all duration-700"
+          className={`h-full transition-all duration-700 ${
+            pct === 100 ? "bg-[#E5A83B]" : pct > 50 ? "bg-[#9BBBDD]" : "bg-[#DE6557]"
+          }`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -99,205 +109,301 @@ function TestProgress({
   );
 }
 
-// Progressive hint display
-function HintLadder({
-  submissionId,
-  hintsUsedCount,
-  onHintRevealed,
-}: {
+// ── Progressive Hint Ladder ────────────────────────────────────────────────
+
+interface HintLadderProps {
   submissionId: string;
-  hintsUsedCount: number;
-  onHintRevealed: () => void;
-}) {
+  onHintRevealed?: (count: number) => void;
+}
+
+function ProgressiveHintLadder({
+  submissionId,
+  onHintRevealed,
+}: HintLadderProps) {
   const [hints, setHints] = useState<string[]>([]);
-  const [revealed, setRevealed] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [revealedCount, setRevealedCount] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const MAX_HINTS = 3;
 
-  async function fetchHints() {
+  async function handleGetHint() {
+    if (loading || revealedCount >= MAX_HINTS) return;
+
     if (hints.length === 0) {
       setLoading(true);
       setError(null);
       try {
         const res: HintResponse = await generateHints(submissionId);
-        const arr = [res.hint_1, res.hint_2, res.hint_3].filter(Boolean) as string[];
-        setHints(arr);
-        setRevealed(1);
-        onHintRevealed();
-      } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : "Failed to load hint.");
+        const ladder = [res.hint_1, res.hint_2, res.hint_3].filter(
+          Boolean
+        ) as string[];
+
+        if (ladder.length === 0) {
+          setError("No hints available for this submission.");
+          return;
+        }
+
+        setHints(ladder);
+        setRevealedCount(1);
+        onHintRevealed?.(1);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load hint.");
       } finally {
         setLoading(false);
       }
-    } else if (revealed < hints.length) {
-      setRevealed((r) => r + 1);
-      onHintRevealed();
+    } else {
+      const nextCount = Math.min(revealedCount + 1, hints.length);
+      setRevealedCount(nextCount);
+      onHintRevealed?.(nextCount);
     }
   }
 
-  const allRevealed = hints.length > 0 && revealed >= hints.length;
-  const btnLabel = loading
-    ? "Getting hint…"
-    : hints.length === 0
-    ? "💡 Get Hint 1"
-    : revealed < hints.length
-    ? `💡 Reveal Hint ${revealed + 1}`
-    : "No more hints";
+  const allRevealed = hints.length > 0 && revealedCount >= hints.length;
+
+  const getButtonLabel = () => {
+    if (loading) return "ANALYZING RECURRING MISTAKES…";
+    if (revealedCount === 0) return "STUCK? GET A HINT";
+    if (revealedCount === 1) return "STUCK? GET HINT 2 (OF 3)";
+    if (revealedCount === 2) return "STUCK? GET FINAL HINT (3 OF 3)";
+    return "ALL 3 HINTS REVEALED";
+  };
 
   return (
-    <div className="space-y-3">
-      {/* Revealed hints */}
-      {hints.slice(0, revealed).map((hint, i) => (
-        <div
-          key={i}
-          className="flex gap-3 rounded-lg border border-violet-500/20 bg-violet-500/5 p-4 animate-in slide-in-from-bottom-2 duration-300"
-        >
-          <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-xs font-bold text-violet-400">
-            {i + 1}
-          </div>
-          <p className="text-sm leading-relaxed text-slate-300">{hint}</p>
+    <div className="space-y-4 border-2 border-black bg-[#1A1A1A] p-5 shadow-[4px_4px_0px_#000]">
+      <div className="flex items-center justify-between border-b-2 border-black pb-3">
+        <div className="flex items-center gap-2">
+          <Lightbulb className="h-4 w-4 text-[#DE6557]" />
+          <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-white">
+            PROGRESSIVE HINT LADDER
+          </h4>
         </div>
-      ))}
-
-      {error && (
-        <p className="text-sm text-rose-400">{error}</p>
-      )}
-
-      {/* Hint counter warning */}
-      {hintsUsedCount > 0 && (
-        <p className="text-xs text-slate-500">
-          ⚠️ Using hints reduces XP reward. Currently used: {hintsUsedCount}
-        </p>
-      )}
-
-      {!allRevealed && (
-        <button
-          onClick={fetchHints}
-          disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-4 py-3 text-sm font-medium text-violet-300 transition-all hover:bg-violet-500/20 hover:border-violet-400/50 disabled:opacity-50"
-        >
-          <Lightbulb className="h-4 w-4" />
-          {btnLabel}
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ── Main component ─────────────────────────────────────────────────────────
-
-interface Props {
-  result: SubmissionResponse;
-  onReset: () => void;
-}
-
-export default function SubmissionFeedback({ result, onReset }: Props) {
-  const router = useRouter();
-  const [hintsUsed, setHintsUsed] = useState(0);
-  const [showHints, setShowHints] = useState(false);
-
-  const cfg = OUTCOME_CONFIG[result.outcome] ?? OUTCOME_CONFIG.error;
-  const isPassed = result.outcome === "passed";
-  const recurringTags = result.recurring?.recurring_tags ?? [];
-
-  return (
-    <div className="flex flex-col gap-4">
-      {/* ── Outcome banner ─────────────────────────────────────────────── */}
-      <OutcomeBadge outcome={result.outcome} />
-
-      {/* ── Stats row ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border border-white/5 bg-white/3 p-3 text-center">
-          <p className="text-xs text-slate-500">XP Earned</p>
-          <p className="text-lg font-bold text-violet-400">
-            +{result.xp_awarded}
-          </p>
-        </div>
-        <div className="rounded-lg border border-white/5 bg-white/3 p-3 text-center">
-          <p className="text-xs text-slate-500">Total XP</p>
-          <p className="text-lg font-bold text-slate-200">
-            {result.new_total_xp}
-          </p>
-        </div>
-        <div className="rounded-lg border border-white/5 bg-white/3 p-3 text-center">
-          <p className="text-xs text-slate-500">Time</p>
-          <p className="text-lg font-bold text-slate-200">
-            {result.execution_ms != null
-              ? `${result.execution_ms.toFixed(0)}ms`
-              : "—"}
-          </p>
-        </div>
+        <span className="badge-black">
+          {revealedCount} / {MAX_HINTS} REVEALED
+        </span>
       </div>
 
-      {/* ── Test progress ───────────────────────────────────────────────── */}
-      <TestProgress
-        passed={result.passed_tests}
-        total={result.total_tests}
-      />
+      <p className="text-xs text-slate-300 font-sans leading-relaxed">
+        Hints point you in the right direction without leaking code. Each step is
+        more concrete than the last.
+      </p>
 
-      {/* ── AI Explanation ──────────────────────────────────────────────── */}
-      {result.explanation && !isPassed && (
-        <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-2">
-          <p className="text-sm font-semibold text-slate-300">
-            🤖 AI Explanation
-          </p>
-          <p className="text-sm font-medium text-slate-200">
-            {result.explanation.summary}
-          </p>
-          <p className="text-sm leading-relaxed text-slate-400 whitespace-pre-line">
-            {result.explanation.body}
-          </p>
-        </div>
-      )}
-
-      {/* ── Mistake tags ────────────────────────────────────────────────── */}
-      {result.mistake_tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {result.mistake_tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs text-amber-400"
+      {/* ── Revealed Hints (one-by-one only) ───────────────────────────── */}
+      {revealedCount > 0 && (
+        <div className="space-y-3 pt-1">
+          {hints.slice(0, revealedCount).map((hint, idx) => (
+            <div
+              key={idx}
+              className="border-2 border-black bg-[#E8E6DB] text-black p-4 shadow-[3px_3px_0px_#8B2019] space-y-1.5 transition-all animate-in"
             >
-              {MISTAKE_LABELS[tag] ?? tag}
-            </span>
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#8B2019]">
+                  {HINT_TIER_NAMES[idx] ?? `Hint ${idx + 1}`}
+                </span>
+                <span className="bg-black text-white px-2 py-0.5 font-mono text-[10px] font-bold">
+                  STEP #{idx + 1}
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed font-sans text-slate-900 font-medium">
+                {hint}
+              </p>
+            </div>
           ))}
         </div>
       )}
 
-      {/* ── Recurring mistake alert ─────────────────────────────────────── */}
-      {recurringTags.length > 0 && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-rose-400" />
-            <p className="text-sm font-semibold text-rose-300">
-              Recurring Pattern Detected
+      {error && (
+        <p className="font-mono text-xs text-[#DE6557] font-bold">{error}</p>
+      )}
+
+      {/* ── Hint Trigger Button ────────────────────────────────────────── */}
+      <div className="pt-2">
+        <button
+          onClick={handleGetHint}
+          disabled={loading || allRevealed}
+          id="get-hint-button"
+          className={`w-full py-3 text-xs tracking-wider flex items-center justify-center gap-2 transition-all ${
+            allRevealed
+              ? "border-2 border-black bg-[#292825] text-slate-500 font-mono font-bold cursor-not-allowed shadow-none"
+              : "btn-terracotta"
+          }`}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin text-black" />
+              <span>CONSULTING AI TUTOR…</span>
+            </>
+          ) : (
+            <>
+              <Lightbulb className="h-4 w-4" />
+              <span>{getButtonLabel()}</span>
+            </>
+          )}
+        </button>
+
+        {revealedCount > 0 && !allRevealed && (
+          <p className="mt-2 font-mono text-[10px] text-slate-400 text-center uppercase tracking-wider">
+            ⚠️ Passes with fewer hints yield greater mastery points.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main SubmissionFeedback Component ──────────────────────────────────────
+
+interface SubmissionFeedbackProps {
+  result: SubmissionResponse;
+  onReset?: () => void;
+  onHintUsed?: (count: number) => void;
+}
+
+export default function SubmissionFeedback({
+  result,
+  onReset,
+  onHintUsed,
+}: SubmissionFeedbackProps) {
+  const router = useRouter();
+
+  const outcomeKey = result.outcome ?? "error";
+  const cfg = OUTCOME_CONFIG[outcomeKey] ?? OUTCOME_CONFIG.error;
+  const OutcomeIcon = cfg.icon;
+  const isPassed = result.outcome === "passed";
+
+  const recurringTags: RecurringTag[] =
+    result.recurring?.recurring_tags ?? [];
+
+  const explanationSummary =
+    typeof result.explanation === "object" && result.explanation !== null
+      ? result.explanation.summary
+      : "";
+  const explanationBody =
+    typeof result.explanation === "object" && result.explanation !== null
+      ? result.explanation.body
+      : typeof result.explanation === "string"
+      ? result.explanation
+      : "";
+
+  return (
+    <div className="flex flex-col gap-5 text-[#F0EFEA]">
+      {/* ── 1. Outcome Header Banner (Brutalist Banner) ─────────────────── */}
+      <div
+        className={`flex items-center justify-between p-4 ${cfg.badgeClass} transition-all`}
+      >
+        <div className="flex items-center gap-3">
+          <OutcomeIcon className="h-6 w-6 flex-shrink-0 text-black stroke-[2.5]" />
+          <div>
+            <h3 className="font-mono text-base font-black tracking-wider uppercase text-black">
+              {cfg.label}
+            </h3>
+            <p className="text-[11px] font-mono text-slate-900 font-bold uppercase tracking-wide">
+              {isPassed
+                ? "All tests passed · AST clean"
+                : "Diagnostics generated · Sandbox contained run safely"}
             </p>
           </div>
+        </div>
+
+        {isPassed && result.xp_awarded > 0 && (
+          <div className="bg-black text-white px-3 py-1 font-mono text-xs font-bold border border-black shadow-[2px_2px_0px_#000]">
+            +{result.xp_awarded} XP
+          </div>
+        )}
+      </div>
+
+      {/* ── 2. Test Execution Progress ─────────────────────────────────── */}
+      <TestProgress passed={result.passed_tests} total={result.total_tests} />
+
+      {/* ── 3. Plain-Language AI Explanation ───────────────────────────── */}
+      {(explanationSummary || explanationBody) && (
+        <div className="border-2 border-black bg-[#1A1A1A] p-5 shadow-[4px_4px_0px_#000] space-y-2.5">
+          <div className="flex items-center justify-between border-b-2 border-black pb-2">
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#DE6557]">
+              AI FORENSIC EXPLANATION
+            </span>
+            <span className="font-mono text-[10px] text-slate-400 uppercase">
+              PLAIN LANGUAGE AUTOPSY
+            </span>
+          </div>
+
+          {explanationSummary && (
+            <p className="font-mono text-xs font-bold text-white">
+              {explanationSummary}
+            </p>
+          )}
+
+          {explanationBody && (
+            <p className="text-xs leading-relaxed text-slate-300 font-sans whitespace-pre-line">
+              {explanationBody}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── 4. Detected AST Mistake Tags ───────────────────────────────── */}
+      {result.mistake_tags && result.mistake_tags.length > 0 && (
+        <div className="space-y-2">
+          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            DIAGNOSED CODE PATTERNS
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {result.mistake_tags.map((tag) => (
+              <span
+                key={tag}
+                className="border-2 border-black bg-[#E5A83B] text-black px-2.5 py-1 font-mono text-xs font-bold shadow-[2px_2px_0px_#000]"
+              >
+                #{MISTAKE_LABELS[tag] ?? tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── 5. Recurring Mistake Alert with Practice Next ──────────────── */}
+      {recurringTags.length > 0 && (
+        <div className="border-2 border-black bg-[#DE6557]/15 p-5 shadow-brutal-red space-y-4">
+          <div className="flex items-center justify-between border-b-2 border-black pb-2">
+            <div className="flex items-center gap-2 text-[#DE6557]">
+              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+              <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-white">
+                RECURRING MISTAKE FLAGGED
+              </h4>
+            </div>
+            <span className="badge-black">RECURRENCE RULE TRIGGERED</span>
+          </div>
+
           {recurringTags.map((rt: RecurringTag) => (
-            <div key={rt.tag} className="space-y-2">
-              <p className="text-xs text-slate-400">
-                <span className="font-medium text-rose-300">
-                  {MISTAKE_LABELS[rt.tag] ?? rt.tag}
+            <div
+              key={rt.tag}
+              className="space-y-3 border-2 border-black bg-[#141414] p-4 text-white shadow-[3px_3px_0px_#000]"
+            >
+              <p className="text-xs text-slate-300 font-sans leading-relaxed">
+                <span className="font-bold text-[#DE6557] font-mono">
+                  #{rt.tag}
                 </span>{" "}
-                appeared in {rt.occurrences} other challenge(s).
+                has now appeared in{" "}
+                <span className="font-bold text-white">
+                  {rt.occurrences} separate challenges
+                </span>
+                .
               </p>
+
               {rt.suggested_challenge_id && (
                 <button
                   onClick={() =>
                     router.push(`/challenge/${rt.suggested_challenge_id}`)
                   }
-                  className="flex items-center gap-2 rounded-lg border border-violet-500/40 bg-violet-500/10 px-3 py-2 text-xs font-medium text-violet-300 hover:bg-violet-500/20 transition-all"
+                  id="practice-next-btn"
+                  className="btn-terracotta w-full py-2.5 text-xs flex items-center justify-between px-3"
                 >
-                  <ChevronRight className="h-3 w-3" />
-                  Practice Next:{" "}
-                  <span className="font-semibold">
-                    {rt.suggested_challenge_title}
-                  </span>
-                  <span className="ml-auto rounded border border-violet-500/20 px-1.5 py-0.5 text-[10px]">
-                    {rt.suggested_challenge_difficulty}
-                  </span>
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span>PRACTICE TARGETED FIX:</span>
+                    <span className="font-black text-black truncate">
+                      {rt.suggested_challenge_title ?? rt.suggested_challenge_id}
+                    </span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 flex-shrink-0" />
                 </button>
               )}
             </div>
@@ -305,89 +411,46 @@ export default function SubmissionFeedback({ result, onReset }: Props) {
         </div>
       )}
 
-      {/* ── Mastery updates ─────────────────────────────────────────────── */}
-      {result.mastery_updates.length > 0 && (
-        <div className="rounded-xl border border-white/5 bg-white/3 p-4 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Mastery Updated
-          </p>
-          {result.mastery_updates.map((m) => (
-            <div key={m.concept_tag} className="flex items-center gap-3">
-              <span className="w-24 truncate text-xs text-slate-400">
-                {m.concept_tag}
-              </span>
-              <div className="flex-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-violet-500 transition-all duration-700"
-                  style={{ width: `${Math.min(100, m.new_score)}%` }}
-                />
-              </div>
-              <span
-                className={`text-xs font-mono ${
-                  m.delta > 0 ? "text-emerald-400" : "text-rose-400"
-                }`}
-              >
-                {m.delta > 0 ? "+" : ""}
-                {m.delta.toFixed(1)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Hints section ───────────────────────────────────────────────── */}
+      {/* ── 6. Progressive Hint Ladder (for failing submissions) ────────── */}
       {!isPassed && (
-        <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-3">
-          <button
-            onClick={() => setShowHints((s) => !s)}
-            className="flex w-full items-center justify-between text-sm font-medium text-slate-300"
-          >
-            <span className="flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-violet-400" />
-              Stuck? Get progressive hints
-            </span>
-            <ChevronRight
-              className={`h-4 w-4 text-slate-500 transition-transform ${
-                showHints ? "rotate-90" : ""
-              }`}
-            />
-          </button>
-          {showHints && (
-            <HintLadder
-              submissionId={result.submission_id}
-              hintsUsedCount={hintsUsed}
-              onHintRevealed={() => setHintsUsed((n) => n + 1)}
-            />
-          )}
-        </div>
+        <ProgressiveHintLadder
+          submissionId={result.submission_id}
+          onHintRevealed={onHintUsed}
+        />
       )}
 
-      {/* ── Pass celebration ────────────────────────────────────────────── */}
+      {/* ── 7. Clean Pass Celebration ──────────────────────────────────── */}
       {isPassed && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-center">
-          <Trophy className="mx-auto h-8 w-8 text-emerald-400 mb-2" />
-          <p className="text-sm text-emerald-300 font-medium">
-            Excellent work! You solved it
-            {hintsUsed === 0 ? " without any hints 🔥" : ` with ${hintsUsed} hint${hintsUsed > 1 ? "s" : ""}`}.
+        <div className="border-2 border-black bg-[#E8E6DB] text-black p-6 text-center space-y-3 shadow-brutal-red">
+          <Trophy className="mx-auto h-8 w-8 text-black" />
+          <h4 className="font-mono text-base font-black uppercase tracking-wider">
+            CHALLENGE SOLVED CLEANLY
+          </h4>
+          <p className="text-xs text-slate-800 font-medium font-sans max-w-sm mx-auto">
+            Forensic analysis passed all constraints. Concept mastery estimates
+            have been recorded.
           </p>
         </div>
       )}
 
-      {/* ── Actions ─────────────────────────────────────────────────────── */}
-      <div className="flex gap-3 pt-1">
-        <button
-          onClick={onReset}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700 transition-all"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Try Again
-        </button>
+      {/* ── 8. Bottom Action Controls ─────────────────────────────────── */}
+      <div className="flex items-center gap-4 pt-2">
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="btn-dark flex-1 py-3 text-xs flex items-center justify-center gap-2"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>RESET CODE</span>
+          </button>
+        )}
+
         <button
           onClick={() => router.push("/dashboard")}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-500 transition-all"
+          className="btn-terracotta flex-1 py-3 text-xs flex items-center justify-center gap-2"
         >
-          Dashboard
-          <ChevronRight className="h-4 w-4" />
+          <span>VIEW DASHBOARD</span>
+          <ChevronRight className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

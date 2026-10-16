@@ -1,8 +1,6 @@
 "use client";
 // app/challenge/[id]/page.tsx
-// Split-pane code workspace:
-//   Left  – Problem info, visible test cases, concept tags
-//   Right – Monaco editor + Run & Submit button + feedback panel
+// Phase 5: The Code Workspace (Challenge Page) — MXESA [26] Neo-Brutalist Theme
 
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useParams } from "next/navigation";
@@ -19,38 +17,48 @@ import {
   Tag,
   FlaskConical,
   CheckCheck,
+  Award,
+  Clock,
+  Terminal,
 } from "lucide-react";
 
-// ── Hardcoded demo learner — replace with auth context in production ────────
+// Demo pseudonymous learner ID
 const DEMO_LEARNER_ID = "00000000-0000-0000-0000-000000000001";
 
-// ── Difficulty badge ───────────────────────────────────────────────────────
-
-const DIFF_STYLES: Record<string, string> = {
-  Easy:   "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
-  Medium: "border-amber-500/40  bg-amber-500/10  text-amber-400",
-  Hard:   "border-rose-500/40   bg-rose-500/10   text-rose-400",
+const DIFF_BADGES: Record<string, string> = {
+  Easy: "bg-[#E8E6DB] text-black border-2 border-black shadow-[2px_2px_0px_#000]",
+  Medium: "bg-[#E5A83B] text-black border-2 border-black shadow-[2px_2px_0px_#000]",
+  Hard: "bg-[#DE6557] text-black border-2 border-black shadow-[2px_2px_0px_#000]",
 };
 
-// ── Test case display ──────────────────────────────────────────────────────
+// ── Visible Test Case Card (MXESA Neo-Brutalist Card) ──────────────────────
 
 function TestCaseCard({ tc, index }: { tc: VisibleTestCase; index: number }) {
   return (
-    <div className="rounded-lg border border-slate-700/60 bg-slate-800/40 overflow-hidden text-xs">
-      <div className="flex items-center gap-2 border-b border-slate-700/60 bg-slate-800/60 px-3 py-2">
-        <FlaskConical className="h-3.5 w-3.5 text-slate-500" />
-        <span className="font-medium text-slate-400">Test Case {index + 1}</span>
+    <div className="border-2 border-black bg-[#1A1A1A] overflow-hidden text-xs shadow-[3px_3px_0px_#000]">
+      <div className="flex items-center justify-between border-b-2 border-black bg-black px-3 py-1.5 font-mono">
+        <div className="flex items-center gap-2">
+          <FlaskConical className="h-3.5 w-3.5 text-[#DE6557]" />
+          <span className="font-bold text-white text-[11px] uppercase tracking-wider">
+            VISIBLE TEST #{index + 1}
+          </span>
+        </div>
+        <span className="text-[10px] text-[#E5A83B] font-bold">PUBLIC</span>
       </div>
-      <div className="p-3 space-y-2">
+      <div className="p-3 space-y-2.5">
         <div>
-          <span className="text-slate-500">Input: </span>
-          <code className="font-mono text-violet-300">
+          <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider block mb-1">
+            Input Arguments:
+          </span>
+          <code className="block border border-black bg-[#141414] px-2.5 py-1.5 font-mono text-[#9BBBDD] text-xs overflow-x-auto shadow-inner">
             {JSON.stringify(tc.input_args)}
           </code>
         </div>
         <div>
-          <span className="text-slate-500">Expected: </span>
-          <code className="font-mono text-emerald-300">
+          <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider block mb-1">
+            Expected Output:
+          </span>
+          <code className="block border border-black bg-[#141414] px-2.5 py-1.5 font-mono text-[#E5A83B] text-xs overflow-x-auto font-bold shadow-inner">
             {JSON.stringify(tc.expected_output)}
           </code>
         </div>
@@ -59,20 +67,20 @@ function TestCaseCard({ tc, index }: { tc: VisibleTestCase; index: number }) {
   );
 }
 
-// ── Inner component (useParams must be inside Suspense) ────────────────────
+// ── Inner Page Component ──────────────────────────────────────────────────
 
 function ChallengePageInner() {
   const { id } = useParams<{ id: string }>();
 
-  const [challenge, setChallenge]   = useState<Challenge | null>(null);
-  const [loadError, setLoadError]   = useState<string | null>(null);
-  const [code, setCode]             = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [code, setCode] = useState<string>("");
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [result, setResult]         = useState<SubmissionResponse | null>(null);
-  const [hintsUsed, setHintsUsed]   = useState(0);
+  const [result, setResult] = useState<SubmissionResponse | null>(null);
+  const [hintsUsed, setHintsUsed] = useState<number>(0);
 
-  // ── Load challenge ─────────────────────────────────────────────────────
+  // Load challenge from backend
   useEffect(() => {
     if (!id) return;
     getChallenge(id)
@@ -80,199 +88,271 @@ function ChallengePageInner() {
         setChallenge(ch);
         setCode(ch.starter_code);
       })
-      .catch((e) => setLoadError(e.message));
+      .catch((err) => {
+        setLoadError(
+          err instanceof Error ? err.message : "Failed to load challenge."
+        );
+      });
   }, [id]);
 
-  // ── Submit handler ─────────────────────────────────────────────────────
+  // Submit code to backend judging loop
   const handleSubmit = useCallback(async () => {
     if (!challenge || submitting) return;
     setSubmitting(true);
     setSubmitError(null);
     setResult(null);
+
     try {
       const res = await submitCode({
-        learner_id:   DEMO_LEARNER_ID,
+        learner_id: DEMO_LEARNER_ID,
         challenge_id: challenge.id,
         code,
-        hints_used:   hintsUsed,
+        hints_used: hintsUsed,
       });
       setResult(res);
-    } catch (e: unknown) {
-      setSubmitError(e instanceof Error ? e.message : "Submission failed.");
+    } catch (err: unknown) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : "Submission failed. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
   }, [challenge, code, hintsUsed, submitting]);
 
-  // ── Keyboard shortcut: Ctrl/Cmd + Enter ───────────────────────────────
+  // Keyboard shortcut: Ctrl/Cmd + Enter
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") handleSubmit();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleSubmit();
+      }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleSubmit]);
 
-  // ── Loading / error states ─────────────────────────────────────────────
-  if (loadError) {
+  // Loading state
+  if (!challenge && !loadError) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0a0a0f]">
-        <div className="text-center space-y-3">
-          <p className="text-rose-400 text-lg">{loadError}</p>
-          <Link href="/" className="text-sm text-violet-400 hover:underline">
-            ← Back to challenges
+      <div className="flex h-screen items-center justify-center bg-[#141414]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#DE6557]" />
+          <span className="font-mono text-xs font-bold text-slate-300">
+            LOADING DOJO WORKSPACE…
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // Load error state
+  if (loadError || !challenge) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#141414]">
+        <div className="text-center space-y-4 p-8 border-2 border-black bg-[#E8E6DB] text-black max-w-md shadow-brutal-red">
+          <p className="font-mono text-sm font-bold text-[#8B2019]">
+            {loadError ?? "CHALLENGE NOT FOUND"}
+          </p>
+          <Link
+            href="/"
+            className="btn-terracotta inline-flex items-center gap-1.5 px-4 py-2 text-xs"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> BACK TO CHALLENGES
           </Link>
         </div>
       </div>
     );
   }
 
-  if (!challenge) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#0a0a0f]">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen flex-col bg-[#0a0a0f] text-slate-200 overflow-hidden">
-      {/* ── Top nav bar ─────────────────────────────────────────────────── */}
-      <header className="flex h-12 flex-shrink-0 items-center gap-4 border-b border-white/5 bg-slate-900/80 px-5 backdrop-blur">
-        <Link
-          href="/"
-          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Challenges
-        </Link>
-        <div className="h-4 w-px bg-slate-700" />
-        <Code2 className="h-4 w-4 text-violet-400" />
-        <span className="font-semibold text-slate-200">{challenge.title}</span>
-        <span
-          className={`ml-1 rounded border px-2 py-0.5 text-xs ${
-            DIFF_STYLES[challenge.difficulty] ?? ""
-          }`}
-        >
-          {challenge.difficulty}
-        </span>
-        <div className="ml-auto flex items-center gap-2 text-xs text-slate-500">
-          <CheckCheck className="h-3.5 w-3.5" />
-          <span>Ctrl + Enter to submit</span>
+    <div className="flex h-screen flex-col bg-[#141414] text-[#F0EFEA] overflow-hidden font-sans selection:bg-[#DE6557] selection:text-black">
+      {/* ── Top Navigation Bar ────────────────────────────────────────── */}
+      <header className="flex h-14 flex-shrink-0 items-center justify-between border-b-2 border-black bg-[#141414] px-5 z-20">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="btn-dark px-3 py-1 text-xs flex items-center gap-1.5"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>BACK</span>
+          </Link>
+          <div className="h-4 w-px bg-slate-700" />
+          <div className="flex items-center gap-2.5">
+            <span className="font-mono font-bold text-xs text-white uppercase hidden sm:inline">
+              DEBUG DOJO <span className="text-[#DE6557]">[26]</span>
+            </span>
+            <span className="text-slate-500 hidden sm:inline">/</span>
+            <span className="font-black text-sm text-white">
+              {challenge.title}
+            </span>
+            <span
+              className={`px-2 py-0.5 text-[10px] font-mono font-bold uppercase ${
+                DIFF_BADGES[challenge.difficulty] ?? ""
+              }`}
+            >
+              {challenge.difficulty}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 text-xs font-mono">
+          <div className="hidden sm:flex items-center gap-1 text-slate-400">
+            <CheckCheck className="h-3.5 w-3.5 text-[#DE6557]" />
+            <span>Ctrl + Enter to run</span>
+          </div>
+          <Link
+            href="/dashboard"
+            className="btn-terracotta px-3 py-1 text-xs"
+          >
+            DASHBOARD
+          </Link>
         </div>
       </header>
 
-      {/* ── Split pane ──────────────────────────────────────────────────── */}
+      {/* ── Main Split-Pane Workspace ─────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
-        {/* ── LEFT: Problem info ─────────────────────────────────────────── */}
-        <aside className="flex w-[380px] flex-shrink-0 flex-col overflow-y-auto border-r border-white/5 bg-slate-900/40">
-          <div className="flex-1 space-y-5 p-5">
-            {/* Description */}
+        {/* ── LEFT PANE: Problem Info ────────────────────────────────── */}
+        <aside className="flex w-[420px] flex-shrink-0 flex-col overflow-y-auto border-r-2 border-black bg-[#141414]">
+          <div className="flex-1 space-y-6 p-6">
+            {/* Title & Metadata */}
             <div>
-              <h1 className="mb-3 text-lg font-bold text-slate-100">
+              {/* 3-color swatch */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex h-1.5 w-8 border border-black">
+                  <div className="w-1/3 bg-[#DE6557]" />
+                  <div className="w-1/3 bg-[#E5A83B]" />
+                  <div className="w-1/3 bg-[#9BBBDD]" />
+                </div>
+                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#DE6557]">
+                  PROBLEM ID: {challenge.id}
+                </span>
+              </div>
+              <h1 className="text-2xl font-black uppercase tracking-tight text-white">
                 {challenge.title}
               </h1>
-              <p className="text-sm leading-relaxed text-slate-400 whitespace-pre-line">
+              <p className="mt-3 text-xs leading-relaxed text-slate-300 font-sans whitespace-pre-line">
                 {challenge.description}
               </p>
             </div>
 
-            {/* Concept tags */}
-            <div>
-              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <Tag className="h-3 w-3" /> Concepts
-              </div>
-              <div className="flex flex-wrap gap-2">
+            {/* Concept Tags */}
+            <div className="space-y-2">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                CONCEPT TAGS
+              </span>
+              <div className="flex flex-wrap gap-1.5">
                 {challenge.concept_tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs text-violet-300"
+                    className="border border-black bg-[#1A1A1A] text-[#DE6557] px-2.5 py-0.5 font-mono text-[10px] font-bold shadow-[2px_2px_0px_#000]"
                   >
-                    {tag}
+                    #{tag}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* Function signature */}
-            <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Signature
-              </div>
-              <code className="block rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-mono text-violet-300">
+            {/* Function Signature */}
+            <div className="space-y-1.5">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                FUNCTION SIGNATURE
+              </span>
+              <code className="block border-2 border-black bg-[#1A1A1A] px-3 py-2 text-xs font-mono text-[#E5A83B] font-bold shadow-[3px_3px_0px_#000]">
                 {challenge.function_signature}
               </code>
             </div>
 
-            {/* XP & time limit */}
+            {/* Metrics */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-white/5 bg-white/3 p-3 text-center">
-                <p className="text-xs text-slate-500">XP Reward</p>
-                <p className="font-bold text-violet-400">+{challenge.xp_reward}</p>
+              <div className="border-2 border-black bg-[#1A1A1A] p-3 text-center shadow-[3px_3px_0px_#000]">
+                <p className="font-mono text-[10px] text-slate-400 uppercase font-bold">
+                  XP REWARD
+                </p>
+                <p className="font-mono text-sm font-bold text-[#DE6557] mt-0.5">
+                  +{challenge.xp_reward} XP
+                </p>
               </div>
-              <div className="rounded-lg border border-white/5 bg-white/3 p-3 text-center">
-                <p className="text-xs text-slate-500">Time Limit</p>
-                <p className="font-bold text-slate-300">{challenge.time_limit_seconds}s</p>
+              <div className="border-2 border-black bg-[#1A1A1A] p-3 text-center shadow-[3px_3px_0px_#000]">
+                <p className="font-mono text-[10px] text-slate-400 uppercase font-bold">
+                  TIME LIMIT
+                </p>
+                <p className="font-mono text-sm font-bold text-[#9BBBDD] mt-0.5">
+                  {challenge.time_limit_seconds}s Timeout
+                </p>
               </div>
             </div>
 
-            {/* Visible test cases */}
-            <div>
-              <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <FlaskConical className="h-3 w-3" /> Sample Test Cases
+            {/* 3 Visible Test Cases */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between border-b-2 border-black pb-2">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
+                  VISIBLE TESTS ({challenge.visible_test_cases.length})
+                </span>
+                <span className="font-mono text-[10px] text-slate-400">
+                  Hidden tests evaluated on submit
+                </span>
               </div>
-              <div className="space-y-2">
-                {challenge.visible_test_cases.map((tc, i) => (
-                  <TestCaseCard key={tc.id} tc={tc} index={i} />
+
+              <div className="space-y-3">
+                {challenge.visible_test_cases.map((tc, index) => (
+                  <TestCaseCard key={tc.id || index} tc={tc} index={index} />
                 ))}
               </div>
-              <p className="mt-2 text-xs text-slate-600">
-                + hidden test cases to check edge cases
-              </p>
             </div>
           </div>
         </aside>
 
-        {/* ── RIGHT: Editor + feedback ──────────────────────────────────── */}
-        <main className="flex flex-1 flex-col overflow-hidden">
-          {/* Editor takes remaining height above feedback */}
-          <div className={`flex-1 overflow-hidden transition-all duration-300 ${result ? "h-1/2" : "h-full"}`}>
-            <CodeEditor value={code} onChange={setCode} />
+        {/* ── RIGHT PANE: Code Editor & Actions ───────────────────────── */}
+        <main className="flex flex-1 flex-col overflow-hidden bg-[#141414]">
+          {/* Editor Container */}
+          <div
+            className={`flex-1 overflow-hidden transition-all duration-300 ${
+              result ? "h-1/2" : "h-full"
+            }`}
+          >
+            <CodeEditor value={code} onChange={setCode} language="python" />
           </div>
 
-          {/* Submit bar */}
-          <div className="flex items-center gap-3 border-t border-white/5 bg-slate-900/60 px-5 py-3">
-            {submitError && (
-              <p className="text-xs text-rose-400">{submitError}</p>
-            )}
-            <div className="ml-auto flex items-center gap-3">
-              <span className="text-xs text-slate-600">
-                {code.split("\n").length} lines
+          {/* Action Bar */}
+          <div className="flex items-center justify-between border-t-2 border-black bg-[#141414] px-5 py-3">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-xs text-slate-400">
+                {code.split("\n").length} lines · Python 3.11 Sandbox
               </span>
+              {submitError && (
+                <span className="font-mono text-xs text-[#DE6557] font-bold">
+                  {submitError}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                id="run-submit-btn"
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition-all hover:from-violet-500 hover:to-indigo-500 hover:shadow-violet-500/30 disabled:opacity-60"
+                id="run-submit-button"
+                className="btn-terracotta px-6 py-2.5 text-xs tracking-wider flex items-center gap-2"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Running…
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>RUNNING SANDBOX…</span>
                   </>
                 ) : (
                   <>
-                    <Play className="h-4 w-4" />
-                    Run &amp; Submit
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                    <span>RUN &amp; SUBMIT</span>
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Feedback panel — slides in below editor when result arrives */}
+          {/* Feedback & Hint UI Panel */}
           {result && (
-            <div className="h-1/2 overflow-y-auto border-t border-white/5 bg-slate-900/60 p-5">
+            <div className="h-1/2 overflow-y-auto border-t-2 border-black bg-[#141414] p-6 transition-all">
               <SubmissionFeedback
                 result={result}
                 onReset={() => {
@@ -280,6 +360,7 @@ function ChallengePageInner() {
                   setCode(challenge.starter_code);
                   setHintsUsed(0);
                 }}
+                onHintUsed={(count) => setHintsUsed(count)}
               />
             </div>
           )}
@@ -289,14 +370,12 @@ function ChallengePageInner() {
   );
 }
 
-// ── Default export wraps in Suspense ─────────────────────────────────────────
-
 export default function ChallengePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center bg-[#0a0a0f]">
-          <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+        <div className="flex h-screen items-center justify-center bg-[#141414]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#DE6557]" />
         </div>
       }
     >
