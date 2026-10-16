@@ -143,4 +143,5 @@ export interface DashboardData {
   mastery: MasteryRecord[];
   weakest_topics: string[];
   recent_submissions: RecentSubmission[];
+  recurring_mistakes?: RecurringTag[];
 }

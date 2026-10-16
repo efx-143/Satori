@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "Debug Dojo — Python Coding Practice",
+  title: "Debug Dojo [26] — Forensic Python Practice",
   description:
-    "Master Python with AI-powered explanations, progressive hints, and concept mastery tracking.",
-  keywords: ["python", "coding", "practice", "AI", "EdTech"],
+    "DI-01 Hackathon: Master Python debugging with sandboxed execution, AI diagnostic explanations, and progressive hints.",
+  keywords: ["python", "debugging", "dojo", "MXESA", "edtech", "hackathon"],
 };
 
 export default function RootLayout({
@@ -17,8 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} antialiased`}>{children}</body>
+    <html lang="en" className="dark scroll-smooth">
+      <body
+        className={`${inter.variable} ${mono.variable} font-sans bg-[#141414] text-[#F0EFEA] antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }

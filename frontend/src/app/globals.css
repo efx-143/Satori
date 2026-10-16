@@ -1,52 +1,158 @@
 @import "tailwindcss";
 
-/* ── Debug Dojo Design Tokens ───────────────────────────────────────────── */
+/* ── MXESA [26] Design Tokens ─────────────────────────────────────────────── */
 :root {
-  --bg-base:      #0a0a0f;
-  --bg-surface:   #13131f;
-  --bg-card:      rgba(255, 255, 255, 0.03);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --accent:       #8b5cf6;
-  --accent-light: #a78bfa;
-  --text-primary: #f1f5f9;
-  --text-muted:   #94a3b8;
-  --text-faint:   #475569;
+  --mx-dark:         #141414;
+  --mx-dark-surface: #1a1a1a;
+  --mx-dark-card:    #1e1e1e;
+  --mx-cream:        #E8E6DB;
+  --mx-cream-card:   #F3F2EB;
+  --mx-cream-alt:    #DCD9CD;
+  --mx-terracotta:   #DE6557;
+  --mx-ochre:        #E5A83B;
+  --mx-blue:         #9BBBDD;
+  --mx-shadow-red:   #8B2019;
+  --mx-shadow-black: #000000;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  background-color: var(--mx-dark);
+}
 
 body {
-  background-color: var(--bg-base);
-  color: var(--text-primary);
+  background-color: var(--mx-dark);
+  color: #F0EFEA;
   font-feature-settings: "rlig" 1, "calt" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Scrollbar ───────────────────────────────────────────────────────────── */
-::-webkit-scrollbar        { width: 6px; height: 6px; }
-::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: #334155; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #475569; }
+/* ── Neo-Brutalist Utility Classes ───────────────────────────────────────── */
 
-/* ── Animations ─────────────────────────────────────────────────────────── */
+/* Hard drop shadows */
+.shadow-brutal-sm {
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.shadow-brutal {
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.shadow-brutal-lg {
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.shadow-brutal-red {
+  box-shadow: 5px 5px 0px #8B2019;
+}
+
+.shadow-brutal-red-lg {
+  box-shadow: 7px 7px 0px #8B2019;
+}
+
+.shadow-brutal-white {
+  box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.2);
+}
+
+/* Neo-brutalist buttons */
+.btn-terracotta {
+  background-color: #DE6557;
+  color: #000000;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  transition: all 0.1s ease;
+}
+.btn-terracotta:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #000000;
+}
+.btn-terracotta:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+.btn-dark {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  transition: all 0.1s ease;
+}
+.btn-dark:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #000000;
+}
+.btn-dark:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+.btn-cream {
+  background-color: #E8E6DB;
+  color: #000000;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  transition: all 0.1s ease;
+}
+.btn-cream:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #000000;
+}
+.btn-cream:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+/* Card presets */
+.card-cream {
+  background-color: #E8E6DB;
+  color: #141414;
+  border: 2px solid #000000;
+  box-shadow: 5px 5px 0px #8B2019;
+}
+
+.card-dark {
+  background-color: #1A1A1A;
+  color: #F0EFEA;
+  border: 2px solid #000000;
+  box-shadow: 5px 5px 0px #000000;
+}
+
+/* Monospace brutalist badge */
+.badge-black {
+  background-color: #000000;
+  color: #FFFFFF;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  display: inline-block;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar        { width: 8px; height: 8px; }
+::-webkit-scrollbar-track  { background: #141414; }
+::-webkit-scrollbar-thumb  { background: #DE6557; border: 2px solid #141414; }
+::-webkit-scrollbar-thumb:hover { background: #E5A83B; }
+
+/* Animations */
 @keyframes slide-in-from-bottom {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-in { animation: slide-in-from-bottom 0.3s ease-out forwards; }
+.animate-in { animation: slide-in-from-bottom 0.25s ease-out forwards; }
 
-/* ── Monaco editor container must fill its parent ────────────────────────── */
 .monaco-editor-container { height: 100% !important; }
-
-/* ── Glassmorphism utility ───────────────────────────────────────────────── */
-.glass {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}

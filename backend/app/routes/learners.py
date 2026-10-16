@@ -17,7 +17,11 @@ from app import db
 from app.models.learner         import Learner
 from app.models.concept_mastery import ConceptMastery
 from app.models.submission      import Submission
-from app.services.learner_tracking import get_mastery_profile, get_weakest_concepts
+from app.services.learner_tracking import (
+    get_mastery_profile,
+    get_weakest_concepts,
+    get_all_recurring_mistakes,
+)
 
 bp = Blueprint("learners", __name__)
 
@@ -135,6 +139,9 @@ def dashboard(learner_id: str):
     mastery = get_mastery_profile(learner_id)
     weakest = get_weakest_concepts(learner_id, top_n=3)
 
+    # Recurring mistakes across all submissions
+    recurring_mistakes = get_all_recurring_mistakes(learner_id)
+
     return jsonify({
         "learner":        learner.to_dict(),
         "stats": {
@@ -147,4 +154,5 @@ def dashboard(learner_id: str):
         "mastery":        mastery,
         "weakest_topics": weakest,
         "recent_submissions": recent_slim,
+        "recurring_mistakes": recurring_mistakes,
     })

@@ -508,3 +508,37 @@ def get_weakest_concepts(learner_id: str, top_n: int = 3) -> list[str]:
         .all()
     )
     return [r.concept_tag for r in records]
+
+
+def get_all_recurring_mistakes(learner_id: str) -> list[dict]:
+    """
+    Find all recurring mistake tags across all submissions for a learner.
+    A tag is recurring if it has appeared in submissions for >= 2 distinct challenges.
+    """
+    past_submissions = (
+        Submission.query
+        .filter(Submission.learner_id == learner_id)
+        .with_entities(Submission.challenge_id, Submission.mistake_tags)
+        .all()
+    )
+    tag_to_challenges: dict[str, set[str]] = {}
+    for cid, tags in past_submissions:
+        if not tags:
+            continue
+        for tag in tags:
+            tag_to_challenges.setdefault(tag, set()).add(cid)
+
+    recurring_list: list[dict] = []
+    for tag, cids in tag_to_challenges.items():
+        if len(cids) >= 2:
+            concept_targets = _MISTAKE_TO_CONCEPTS.get(tag, ["lists"])
+            suggestion = _find_remedial_challenge(learner_id, concept_targets, "")
+            recurring_list.append({
+                "tag": tag,
+                "occurrences": len(cids),
+                "previous_challenge_ids": sorted(cids),
+                "suggested_challenge_id": suggestion.id if suggestion else None,
+                "suggested_challenge_title": suggestion.title if suggestion else None,
+                "suggested_challenge_difficulty": suggestion.difficulty if suggestion else None,
+            })
+    return recurring_list
