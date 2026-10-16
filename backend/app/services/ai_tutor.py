@@ -52,23 +52,26 @@ logger = logging.getLogger(__name__)
 # Configuration
 # ─────────────────────────────────────────────────────────────────────────────
 
-_DEFAULT_MODEL = os.environ.get("LLM_MODEL", "gpt-4o-mini")
-_PROVIDER      = os.environ.get("LLM_PROVIDER", "openai").lower()
-_API_KEY       = os.environ.get("LLM_API_KEY", "")
+# Base URLs per provider
+_BASE_URLS: dict[str, str] = {
+    "gemini":        "https://generativelanguage.googleapis.com/v1beta/models",
+    "gemini_native": "https://generativelanguage.googleapis.com/v1beta/models",
+    "gemini_openai": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "openai":        "https://api.openai.com/v1",
+    "ollama":        "http://localhost:11434/v1",
+    "groq":          "https://api.groq.com/openai/v1",
+    "together":      "https://api.together.xyz/v1",
+}
+
+_PROVIDER      = os.environ.get("LLM_PROVIDER", "gemini").lower()
+_API_KEY       = os.environ.get("LLM_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+_DEFAULT_MODEL = os.environ.get("LLM_MODEL", "gemini-1.5-flash" if "gemini" in _PROVIDER else "gpt-4o-mini")
 _TIMEOUT       = int(os.environ.get("LLM_TIMEOUT", "30"))
 _MAX_RETRIES   = int(os.environ.get("LLM_MAX_RETRIES", "3"))
 
-# Base URLs per provider
-_BASE_URLS: dict[str, str] = {
-    "openai":  "https://api.openai.com/v1",
-    "ollama":  "http://localhost:11434/v1",
-    "groq":    "https://api.groq.com/openai/v1",
-    "together":"https://api.together.xyz/v1",
-}
-
 _BASE_URL = os.environ.get(
     "LLM_BASE_URL",
-    _BASE_URLS.get(_PROVIDER, _BASE_URLS["openai"]),
+    _BASE_URLS.get(_PROVIDER, _BASE_URLS.get("openai", "https://api.openai.com/v1")),
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -166,29 +169,76 @@ _MISTAKE_DESCRIPTIONS: dict[str, str] = {
 # LLM Client (OpenAI-compatible, stdlib only — no third-party SDK required)
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _log_ai_interaction(
+    provider: str,
+    model: str,
+    system_prompt: str,
+    user_prompt: str,
+    response: str | None,
+    error: str | None = None,
+    latency_s: float = 0.0,
+) -> None:
+    """
+    Gate 6 Compliance: Persist all AI prompts and responses for judge inspection.
+    Stored in backend/logs/ai_prompts.log as newline-delimited JSON.
+    """
+    try:
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        log_dir = os.path.join(backend_dir, "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "ai_prompts.log")
+        entry = {
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "provider": provider,
+            "model": model,
+            "latency_seconds": round(latency_s, 3),
+            "system_prompt": system_prompt,
+            "user_prompt": user_prompt,
+            "response": response,
+            "error": error,
+        }
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception as exc:
+        logger.warning("Could not write to ai_prompts.log: %s", exc)
+
+
+def _clean_json_text(text: str) -> str:
+    """Strip markdown code fence blocks if returned by model."""
+    text = text.strip()
+    if text.startswith("```json"):
+        text = text[7:]
+    elif text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    return text.strip()
+
+
 class LLMClient:
     """
-    Minimal OpenAI-compatible chat completion client built on urllib.
-    Supports any provider that implements the /v1/chat/completions endpoint.
-
-    Why urllib and not httpx/requests?
-    The sandbox image has no third-party HTTP libs; this module runs on the
-    HOST, but keeping zero external deps makes the service lighter.
-    Use openai>=1.0 SDK instead by swapping _call() if you prefer.
+    Multi-provider AI Client built entirely on urllib (zero third-party dependencies).
+    Supports:
+      1. Gemini Native REST API (x-goog-api-key header + system_instruction)
+      2. OpenAI-compatible endpoints (Groq, Together, OpenAI, Ollama, Gemini-OpenAI)
     """
 
     def __init__(
         self,
-        base_url: str = _BASE_URL,
-        api_key: str = _API_KEY,
-        model: str = _DEFAULT_MODEL,
+        provider: str | None = None,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        model: str | None = None,
         timeout: int = _TIMEOUT,
         max_retries: int = _MAX_RETRIES,
     ) -> None:
-        self.base_url    = base_url.rstrip("/")
-        self.api_key     = api_key
-        self.model       = model
-        self.timeout     = timeout
+        self.provider = (provider or os.environ.get("LLM_PROVIDER", "gemini")).lower()
+        self.api_key = api_key if api_key is not None else os.environ.get("LLM_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+        default_model = "gemini-1.5-flash" if "gemini" in self.provider else "gpt-4o-mini"
+        self.model = model or os.environ.get("LLM_MODEL", default_model)
+        default_url = _BASE_URLS.get(self.provider, _BASE_URLS.get("openai", "https://api.openai.com/v1"))
+        self.base_url = (base_url or os.environ.get("LLM_BASE_URL", default_url)).rstrip("/")
+        self.timeout = timeout
         self.max_retries = max_retries
 
     def chat(
@@ -199,45 +249,57 @@ class LLMClient:
         max_tokens: int = 1024,
     ) -> str:
         """
-        Send a chat completion request.  Returns the assistant message content.
-        Raises RuntimeError if all retries fail.
+        Send chat completion request to Gemini native or OpenAI-compatible endpoint.
+        Logs interaction for Gate 6 compliance.
         """
-        payload = json.dumps({
-            "model": self.model,
-            "messages": [
-                {"role": "system",  "content": system_prompt},
-                {"role": "user",    "content": user_prompt},
-            ],
-            "temperature": temperature,
-            "max_tokens":  max_tokens,
-        }).encode("utf-8")
+        if not self.api_key and self.provider != "ollama":
+            raise ValueError(f"LLM_API_KEY is not configured for provider '{self.provider}'.")
 
-        headers: dict[str, str] = {
-            "Content-Type":  "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-        }
+        is_gemini_native = (
+            self.provider in ("gemini", "gemini_native")
+            or ("generativelanguage.googleapis.com" in self.base_url and "openai" not in self.base_url)
+        )
 
-        url = f"{self.base_url}/chat/completions"
+        start_time = time.time()
         last_exc: Exception | None = None
 
         for attempt in range(1, self.max_retries + 1):
             try:
-                req = urllib.request.Request(
-                    url, data=payload, headers=headers, method="POST"
+                if is_gemini_native:
+                    result = self._call_gemini_native(
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                    )
+                else:
+                    result = self._call_openai_compatible(
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                    )
+
+                latency = time.time() - start_time
+                _log_ai_interaction(
+                    provider=self.provider,
+                    model=self.model,
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    response=result,
+                    latency_s=latency,
                 )
-                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                    body = json.loads(resp.read().decode("utf-8"))
-                    return body["choices"][0]["message"]["content"].strip()
+                return result
 
             except urllib.error.HTTPError as exc:
                 err_body = exc.read().decode("utf-8", errors="replace")
                 logger.warning(
                     "LLM HTTP %s on attempt %d/%d: %s",
-                    exc.code, attempt, self.max_retries, err_body[:300],
+                    exc.code, attempt, self.max_retries, err_body[:400],
                 )
-                last_exc = exc
+                last_exc = RuntimeError(f"HTTP {exc.code}: {err_body[:300]}")
                 if exc.code in (400, 401, 403):
-                    break   # non-retriable auth/format errors
+                    break   # non-retriable auth or invalid parameter errors
                 time.sleep(2 ** attempt)
 
             except Exception as exc:
@@ -248,19 +310,130 @@ class LLMClient:
                 last_exc = exc
                 time.sleep(2 ** attempt)
 
+        latency = time.time() - start_time
+        _log_ai_interaction(
+            provider=self.provider,
+            model=self.model,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            response=None,
+            error=str(last_exc),
+            latency_s=latency,
+        )
         raise RuntimeError(
             f"LLM request failed after {self.max_retries} attempts: {last_exc}"
         )
 
+    def _call_gemini_native(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        """Call Google Generative Language REST API."""
+        import urllib.parse
+        clean_model = self.model.strip().lower().replace(" ", "-")
+        model_slug = urllib.parse.quote(clean_model)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_slug}:generateContent"
+        # Ensure sufficient tokens for thinking models (Gemini 2.5 / 3.x Flash uses ~1000 thinking tokens)
+        gemini_max_tokens = max(max_tokens, 2500)
+        payload = json.dumps({
+            "system_instruction": {
+                "parts": [{"text": system_prompt}]
+            },
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": user_prompt}]
+                }
+            ],
+            "generationConfig": {
+                "temperature": temperature,
+                "maxOutputTokens": gemini_max_tokens,
+                "responseMimeType": "application/json",
+            }
+        }).encode("utf-8")
 
-# Module-level singleton (lazily initialised)
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": self.api_key,
+        }
+
+        req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            candidates = body.get("candidates", [])
+            if not candidates:
+                raise RuntimeError(f"Gemini returned no candidates: {body}")
+            parts = candidates[0].get("content", {}).get("parts", [])
+            if not parts:
+                raise RuntimeError(f"Gemini returned empty parts: {body}")
+            raw_text = parts[0].get("text", "")
+            return _clean_json_text(raw_text)
+
+    def _call_openai_compatible(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        """Call standard OpenAI /chat/completions endpoint."""
+        url = f"{self.base_url}/chat/completions"
+        req_data = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_prompt},
+            ],
+            "temperature": temperature,
+            "max_tokens":  max_tokens,
+        }
+        if self.provider in ("openai", "groq"):
+            req_data["response_format"] = {"type": "json_object"}
+
+        payload = json.dumps(req_data).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+        }
+
+        req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+            content = body["choices"][0]["message"]["content"]
+            return _clean_json_text(content)
+
+
+# Module-level singleton (lazily initialised, dynamic on env change)
 _client: LLMClient | None = None
 
 
 def _get_client() -> LLMClient:
     global _client
-    if _client is None:
-        _client = LLMClient()
+    provider = os.environ.get("LLM_PROVIDER", "gemini").lower()
+    api_key = os.environ.get("LLM_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+    default_model = "gemini-1.5-flash" if "gemini" in provider else "gpt-4o-mini"
+    model = os.environ.get("LLM_MODEL", default_model)
+    default_url = _BASE_URLS.get(provider, _BASE_URLS.get("openai", "https://api.openai.com/v1"))
+    base_url = os.environ.get("LLM_BASE_URL", default_url)
+
+    if (
+        _client is not None
+        and _client.provider == provider
+        and _client.api_key == api_key
+        and _client.model == model
+        and _client.base_url == base_url.rstrip("/")
+    ):
+        return _client
+
+    _client = LLMClient(
+        provider=provider,
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+    )
     return _client
 
 

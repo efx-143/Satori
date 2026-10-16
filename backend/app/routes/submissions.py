@@ -199,8 +199,11 @@ def submit_code():
     db_outcome  = outcome_map.get(raw_outcome, "error")
 
     # ── 4. Detect structural mistakes (AST) ───────────────────────────────────
-    mistake_result = detect_mistakes(code)
-    mistake_tags   = mistake_result.tags
+    if db_outcome != "passed":
+        mistake_result = detect_mistakes(code)
+        mistake_tags   = mistake_result.tags
+    else:
+        mistake_tags   = []
 
     # ── 5. Build enriched test results for AI (labels attached) ──────────────
     label_map: dict[str, str] = {
@@ -273,11 +276,10 @@ def submit_code():
         learner.xp_points = (learner.xp_points or 0) + xp_awarded
         # Update streak: if last activity was yesterday, increment; else reset
         today = datetime.date.today()
-        last  = (
-            learner.last_active_date.date()
-            if learner.last_active_date
-            else None
-        )
+        if learner.last_active_date:
+            last = learner.last_active_date.date() if hasattr(learner.last_active_date, "date") else learner.last_active_date
+        else:
+            last = None
         if last is None or last < today:
             if last == today - datetime.timedelta(days=1):
                 learner.streak_days = (learner.streak_days or 0) + 1

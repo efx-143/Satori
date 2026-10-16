@@ -1479,8 +1479,15 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
     const OutcomeIcon = cfg.icon;
     const isPassed = result.outcome === "passed";
     const recurringTags = result.recurring?.recurring_tags ?? [];
-    const explanationSummary = typeof result.explanation === "object" && result.explanation !== null ? result.explanation.summary : "";
-    const explanationBody = typeof result.explanation === "object" && result.explanation !== null ? result.explanation.body : typeof result.explanation === "string" ? result.explanation : "";
+    let explanationSummary = typeof result.explanation === "object" && result.explanation !== null ? result.explanation.summary ?? "" : "";
+    let explanationBody = typeof result.explanation === "object" && result.explanation !== null ? result.explanation.body ?? "" : typeof result.explanation === "string" ? result.explanation : "";
+    if (explanationBody && explanationBody.trim().startsWith("{")) {
+        try {
+            const parsed = JSON.parse(explanationBody.trim());
+            if (parsed.summary) explanationSummary = parsed.summary;
+            if (parsed.body) explanationBody = parsed.body;
+        } catch  {}
+    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex flex-col gap-5 text-[#F0EFEA]",
         children: [
@@ -1494,7 +1501,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                 className: "h-6 w-6 flex-shrink-0 text-black stroke-[2.5]"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 295,
+                                lineNumber: 303,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1504,7 +1511,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                         children: cfg.label
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                        lineNumber: 297,
+                                        lineNumber: 305,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1512,19 +1519,19 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                         children: isPassed ? "All tests passed · AST clean" : "Diagnostics generated · Sandbox contained run safely"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                        lineNumber: 300,
+                                        lineNumber: 308,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 296,
+                                lineNumber: 304,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 294,
+                        lineNumber: 302,
                         columnNumber: 9
                     }, this),
                     isPassed && result.xp_awarded > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1536,13 +1543,13 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 309,
+                        lineNumber: 317,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 291,
+                lineNumber: 299,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(TestProgress, {
@@ -1550,7 +1557,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                 total: result.total_tests
             }, void 0, false, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 316,
+                lineNumber: 324,
                 columnNumber: 7
             }, this),
             (explanationSummary || explanationBody) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1564,7 +1571,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                 children: "AI FORENSIC EXPLANATION"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 322,
+                                lineNumber: 330,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1572,13 +1579,13 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                 children: "PLAIN LANGUAGE AUTOPSY"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 325,
+                                lineNumber: 333,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 321,
+                        lineNumber: 329,
                         columnNumber: 11
                     }, this),
                     explanationSummary && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1586,7 +1593,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                         children: explanationSummary
                     }, void 0, false, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 331,
+                        lineNumber: 339,
                         columnNumber: 13
                     }, this),
                     explanationBody && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1594,16 +1601,16 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                         children: explanationBody
                     }, void 0, false, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 337,
+                        lineNumber: 345,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 320,
+                lineNumber: 328,
                 columnNumber: 9
             }, this),
-            result.mistake_tags && result.mistake_tags.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            !isPassed && result.mistake_tags && result.mistake_tags.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "space-y-2",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1611,7 +1618,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                         children: "DIAGNOSED CODE PATTERNS"
                     }, void 0, false, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 347,
+                        lineNumber: 355,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1624,18 +1631,18 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                 ]
                             }, tag, true, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 352,
+                                lineNumber: 360,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 350,
+                        lineNumber: 358,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 346,
+                lineNumber: 354,
                 columnNumber: 9
             }, this),
             recurringTags.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1651,7 +1658,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                         className: "h-4 w-4 flex-shrink-0"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                        lineNumber: 368,
+                                        lineNumber: 376,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -1659,13 +1666,13 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                         children: "RECURRING MISTAKE FLAGGED"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                        lineNumber: 369,
+                                        lineNumber: 377,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 367,
+                                lineNumber: 375,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1673,13 +1680,13 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                 children: "RECURRENCE RULE TRIGGERED"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 373,
+                                lineNumber: 381,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 366,
+                        lineNumber: 374,
                         columnNumber: 11
                     }, this),
                     recurringTags.map((rt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1696,7 +1703,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                            lineNumber: 382,
+                                            lineNumber: 390,
                                             columnNumber: 17
                                         }, this),
                                         " ",
@@ -1710,14 +1717,14 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                            lineNumber: 386,
+                                            lineNumber: 394,
                                             columnNumber: 17
                                         }, this),
                                         "."
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                    lineNumber: 381,
+                                    lineNumber: 389,
                                     columnNumber: 15
                                 }, this),
                                 rt.suggested_challenge_id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1732,7 +1739,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                                     children: "PRACTICE TARGETED FIX:"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                                    lineNumber: 401,
+                                                    lineNumber: 409,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1740,38 +1747,38 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                                     children: rt.suggested_challenge_title ?? rt.suggested_challenge_id
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                                    lineNumber: 402,
+                                                    lineNumber: 410,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                            lineNumber: 400,
+                                            lineNumber: 408,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
                                             className: "h-4 w-4 flex-shrink-0"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                            lineNumber: 406,
+                                            lineNumber: 414,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                    lineNumber: 393,
+                                    lineNumber: 401,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, rt.tag, true, {
                             fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                            lineNumber: 377,
+                            lineNumber: 385,
                             columnNumber: 13
                         }, this))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 365,
+                lineNumber: 373,
                 columnNumber: 9
             }, this),
             !isPassed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ProgressiveHintLadder, {
@@ -1779,7 +1786,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                 onHintRevealed: onHintUsed
             }, void 0, false, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 416,
+                lineNumber: 424,
                 columnNumber: 9
             }, this),
             isPassed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1789,7 +1796,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                         className: "mx-auto h-8 w-8 text-black"
                     }, void 0, false, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 425,
+                        lineNumber: 433,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -1797,7 +1804,7 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                         children: "CHALLENGE SOLVED CLEANLY"
                     }, void 0, false, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 426,
+                        lineNumber: 434,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1805,13 +1812,13 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                         children: "Forensic analysis passed all constraints. Concept mastery estimates have been recorded."
                     }, void 0, false, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 429,
+                        lineNumber: 437,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 424,
+                lineNumber: 432,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1825,20 +1832,20 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                 className: "h-3.5 w-3.5"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 443,
+                                lineNumber: 451,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 children: "RESET CODE"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 444,
+                                lineNumber: 452,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 439,
+                        lineNumber: 447,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1849,32 +1856,32 @@ function SubmissionFeedback({ result, onReset, onHintUsed }) {
                                 children: "VIEW DASHBOARD"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 452,
+                                lineNumber: 460,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
                                 className: "h-3.5 w-3.5"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                                lineNumber: 453,
+                                lineNumber: 461,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                        lineNumber: 448,
+                        lineNumber: 456,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/SubmissionFeedback.tsx",
-                lineNumber: 437,
+                lineNumber: 445,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/SubmissionFeedback.tsx",
-        lineNumber: 289,
+        lineNumber: 297,
         columnNumber: 5
     }, this);
 }

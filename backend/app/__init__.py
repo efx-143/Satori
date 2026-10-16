@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 def create_app(config_object: str = "app.config.DevelopmentConfig") -> Flask:
+    from app.env_loader import load_env
+    load_env()
+
     app = Flask(__name__)
     app.config.from_object(config_object)
     app.url_map.strict_slashes = False   # stop 308 redirects on missing trailing slash

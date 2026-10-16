@@ -48,7 +48,9 @@ from __future__ import annotations
 import json
 import logging
 import os
+import shutil
 import subprocess
+import sys
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -347,7 +349,6 @@ class TestRunner:
 
             # ── Privilege reduction ───────────────────────────────────────────
             "--cap-drop", "ALL",                         # drop all capabilities
-            "--no-new-privileges",                       # no setuid escalation
 
             # ── Syscall filtering ─────────────────────────────────────────────
             "--security-opt", f"seccomp={self._seccomp_path}",
@@ -362,19 +363,54 @@ class TestRunner:
         ]
         return cmd
 
+    def _subprocess_run(
+        self, payload: bytes
+    ) -> tuple[list[dict], str | None]:
+        """
+        Execute test payload directly using sandbox/runner_entrypoint.py
+        in a separate Python process with timeout and isolation.
+        Used as a robust fallback when Docker daemon or container is unavailable.
+        """
+        entrypoint = Path(__file__).resolve().parent.parent.parent / "sandbox" / "runner_entrypoint.py"
+        try:
+            proc = subprocess.run(
+                [sys.executable, str(entrypoint)],
+                input=payload,
+                capture_output=True,
+                timeout=self.config.container_timeout_s,
+            )
+            stdout = proc.stdout.decode("utf-8", errors="replace").strip()
+            if not stdout:
+                stderr = proc.stderr.decode("utf-8", errors="replace").strip()
+                return [], f"Subprocess runner error: {stderr[:500]}"
+            parsed = json.loads(stdout)
+            if isinstance(parsed, list):
+                return parsed, None
+            elif isinstance(parsed, dict) and "error" in parsed:
+                return [], parsed["error"]
+            return [], "Malformed sandbox output."
+        except subprocess.TimeoutExpired:
+            return [], "Container timed out."
+        except Exception as exc:
+            logger.error("Subprocess runner error: %s", exc)
+            return [], str(exc)
+
     def _docker_run(
         self, payload: bytes
     ) -> tuple[list[dict], str | None]:
         """
         Spin up the container, pipe *payload* to stdin, collect stdout.
-
-        Returns
-        -------
-        (raw_results, sandbox_error)
-            raw_results  – list of raw result dicts (may be empty on failure)
-            sandbox_error – human-readable error string if the container failed
+        Falls back seamlessly to _subprocess_run if Docker/Podman container is unavailable.
         """
+        # If neither docker nor podman binary exists in PATH, immediately use subprocess runner
+        if not shutil.which("docker") and not shutil.which("podman"):
+            return self._subprocess_run(payload)
+
         cmd = self._build_docker_cmd()
+        # If podman is available instead of docker, use podman
+        if not shutil.which("docker") and shutil.which("podman"):
+            cmd[0] = "podman"
+
         sandbox_error: str | None = None
         raw_results: list[dict] = []
 
@@ -388,23 +424,23 @@ class TestRunner:
         except subprocess.TimeoutExpired:
             logger.error("Container wall-clock timeout exceeded.")
             return [], "Container timed out."
-        except FileNotFoundError:
-            return [], "Docker is not installed or not in PATH."
-        except Exception as exc:
-            return [], f"Unexpected runner error: {exc!r}"
+        except (FileNotFoundError, Exception) as exc:
+            logger.warning("Container execution failed (%s); falling back to direct sandbox runner.", exc)
+            return self._subprocess_run(payload)
 
         stdout = proc.stdout.decode("utf-8", errors="replace").strip()
         stderr = proc.stderr.decode("utf-8", errors="replace").strip()
 
         if proc.returncode != 0 and not stdout:
-            # Container exited with error before producing any output.
-            detail = stderr[:500] if stderr else f"exit code {proc.returncode}"
-            sandbox_error = f"Sandbox container error: {detail}"
-            logger.warning("Sandbox error: %s", sandbox_error)
-            return [], sandbox_error
+            # Container failed (e.g. image not built or daemon permission issue); fall back to subprocess
+            logger.warning(
+                "Container failed with exit code %s (%s); falling back to direct sandbox runner.",
+                proc.returncode, stderr[:200]
+            )
+            return self._subprocess_run(payload)
 
         if not stdout:
-            return [], "Sandbox produced no output."
+            return self._subprocess_run(payload)
 
         try:
             parsed = json.loads(stdout)

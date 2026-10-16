@@ -6,6 +6,10 @@ Usage:
     # or with gunicorn:
     gunicorn "run:app" --bind 0.0.0.0:5000 --workers 2
 """
+from app.env_loader import load_env
+
+load_env()
+
 from app import create_app
 
 app = create_app()
