@@ -274,16 +274,24 @@ export default function SubmissionFeedback({
   const recurringTags: RecurringTag[] =
     result.recurring?.recurring_tags ?? [];
 
-  const explanationSummary =
+  let explanationSummary =
     typeof result.explanation === "object" && result.explanation !== null
-      ? result.explanation.summary
+      ? result.explanation.summary ?? ""
       : "";
-  const explanationBody =
+  let explanationBody =
     typeof result.explanation === "object" && result.explanation !== null
-      ? result.explanation.body
+      ? result.explanation.body ?? ""
       : typeof result.explanation === "string"
       ? result.explanation
       : "";
+
+  if (explanationBody && explanationBody.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(explanationBody.trim());
+      if (parsed.summary) explanationSummary = parsed.summary;
+      if (parsed.body) explanationBody = parsed.body;
+    } catch {}
+  }
 
   return (
     <div className="flex flex-col gap-5 text-[#F0EFEA]">
@@ -342,7 +350,7 @@ export default function SubmissionFeedback({
       )}
 
       {/* ── 4. Detected AST Mistake Tags ───────────────────────────────── */}
-      {result.mistake_tags && result.mistake_tags.length > 0 && (
+      {!isPassed && result.mistake_tags && result.mistake_tags.length > 0 && (
         <div className="space-y-2">
           <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
             DIAGNOSED CODE PATTERNS
