@@ -13,9 +13,17 @@ db = SQLAlchemy()
 logger = logging.getLogger(__name__)
 
 
-def create_app(config_object: str = "app.config.DevelopmentConfig") -> Flask:
+def create_app(config_object: str | None = None) -> Flask:
     from app.env_loader import load_env
     load_env()
+
+    if config_object is None:
+        env = os.environ.get("FLASK_ENV", "development").lower()
+        config_object = (
+            "app.config.ProductionConfig"
+            if env == "production"
+            else "app.config.DevelopmentConfig"
+        )
 
     app = Flask(__name__)
     app.config.from_object(config_object)
@@ -23,14 +31,29 @@ def create_app(config_object: str = "app.config.DevelopmentConfig") -> Flask:
 
     # ── Extensions ────────────────────────────────────────────────────────────
     db.init_app(app)
-    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])  # allow Next.js dev
 
-    # ── Database tables ───────────────────────────────────────────────────────
+    # ── CORS: Allow all origins by default (or custom from CORS_ORIGINS) ─────
+    cors_origins = os.environ.get("CORS_ORIGINS", "*")
+    if cors_origins == "*":
+        CORS(app, resources={r"/*": {"origins": "*"}})
+    else:
+        origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
+        CORS(app, origins=origins)
+
+    # ── Database tables & Auto-Seed ───────────────────────────────────────────
     with app.app_context():
         from app.models import (  # noqa: F401
             learner, concept_mastery, challenge, test_case, submission,
         )
         db.create_all()
+
+        try:
+            from app.models.challenge import Challenge
+            if Challenge.query.count() == 0:
+                from seed_db import seed
+                seed()
+        except Exception as exc:
+            logger.warning("Auto-seed check failed: %s", exc)
 
     # ── Blueprints ────────────────────────────────────────────────────────────
     from app.routes import register_blueprints
