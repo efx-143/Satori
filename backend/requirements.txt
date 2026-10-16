@@ -1,3 +1,12 @@
+# Web framework
 Flask>=3.0,<4.0
 Flask-SQLAlchemy>=3.1,<4.0
+
+# ORM
 SQLAlchemy>=2.0,<3.0
+
+# Production WSGI server (optional for hackathon, good practice)
+gunicorn>=21.0,<23.0
+
+# Testing
+pytest>=7.0

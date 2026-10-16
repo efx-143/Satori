@@ -1,20 +1,60 @@
 """
 Debug Dojo – Flask application factory.
 """
-from flask import Flask
+from __future__ import annotations
+
+import logging
+
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+logger = logging.getLogger(__name__)
 
 
-def create_app(config_object="app.config.DevelopmentConfig"):
+def create_app(config_object: str = "app.config.DevelopmentConfig") -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_object)
 
+    # ── Extensions ────────────────────────────────────────────────────────────
     db.init_app(app)
 
+    # ── Database tables ───────────────────────────────────────────────────────
     with app.app_context():
-        from app.models import learner, concept_mastery, challenge, test_case, submission  # noqa: F401
+        from app.models import (  # noqa: F401
+            learner, concept_mastery, challenge, test_case, submission,
+        )
         db.create_all()
+
+    # ── Blueprints ────────────────────────────────────────────────────────────
+    from app.routes import register_blueprints
+    register_blueprints(app)
+
+    # ── Health check ──────────────────────────────────────────────────────────
+    @app.get("/health")
+    def health():
+        return jsonify({"status": "ok", "service": "debug-dojo-api"})
+
+    # ── JSON error handlers ───────────────────────────────────────────────────
+    @app.errorhandler(400)
+    def bad_request(exc):
+        return jsonify({"error": "bad_request",
+                        "message": str(exc.description)}), 400
+
+    @app.errorhandler(404)
+    def not_found(exc):
+        return jsonify({"error": "not_found",
+                        "message": str(exc.description)}), 404
+
+    @app.errorhandler(409)
+    def conflict(exc):
+        return jsonify({"error": "conflict",
+                        "message": str(exc.description)}), 409
+
+    @app.errorhandler(500)
+    def internal(exc):
+        logger.exception("Unhandled 500: %s", exc)
+        return jsonify({"error": "internal_server_error",
+                        "message": str(exc.description)}), 500
 
     return app
