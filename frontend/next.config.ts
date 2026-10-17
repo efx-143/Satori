@@ -7,8 +7,6 @@ const FLASK_API = (
 ).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
