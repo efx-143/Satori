@@ -88,3 +88,19 @@ def create_app(config_object: str | None = None) -> Flask:
                         "message": str(exc.description)}), 500
 
     return app
+
+
+_app_instance: Flask | None = None
+
+
+def __getattr__(name: str):
+    """
+    Allow `from app import app` or `gunicorn app:app` to work out-of-the-box
+    without triggering eager creation during test imports.
+    """
+    if name == "app":
+        global _app_instance
+        if _app_instance is None:
+            _app_instance = create_app()
+        return _app_instance
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
