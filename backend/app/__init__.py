@@ -4,6 +4,7 @@ Debug Dojo – Flask application factory.
 from __future__ import annotations
 
 import logging
+import os
 
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
