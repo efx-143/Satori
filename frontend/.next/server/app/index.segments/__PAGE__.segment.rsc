@@ -1,9 +1,9 @@
 1:"$Sreact.fragment"
-2:"/_next/static/chunks/0rrmb7737wi-z.js"
+2:"/_next/static/chunks/1tq6ppe__m8m-.js"
 3:I[39756,["$2"],"default"]
 4:I[37457,["$2"],"default"]
 9:I[47257,["$2"],"ClientPageRoot"]
-a:"/_next/static/chunks/2cc3kctjzc9bt.js"
+a:"/_next/static/chunks/353t7_3m287ey.js"
 b:I[52683,["$2","$a"],"default"]
 c:I[97367,["$2"],"OutletBoundary"]
 d:"$Sreact.suspense"
@@ -11,7 +11,7 @@ d:"$Sreact.suspense"
 12:I[97367,["$2"],"$11"]
 13:"MetadataBoundary"
 14:I[97367,["$2"],"$13"]
-:HL["/_next/static/chunks/2aok-k4tri13l.css","style"]
+:HL["/_next/static/chunks/0_41tym9c_4e_.css","style"]
 6:X
 6:C
 7:X
@@ -19,12 +19,12 @@ d:"$Sreact.suspense"
 7:C
 10:X
 10:C
-8:[["children",{"s":"__PAGE__","h":49314,"d":{"r":["$","$1","c",{"children":[["$","$L9",null,{"Component":"$b","serverProvidedParams":null}],[["$","script","script-0",{"src":"/_next/static/chunks/2cc3kctjzc9bt.js","async":true}]],["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":"$@f","v":"$10","s":"$7"}}]]
+8:[["children",{"s":"__PAGE__","h":49314,"d":{"r":["$","$1","c",{"children":[["$","$L9",null,{"Component":"$b","serverProvidedParams":null}],[["$","script","script-0",{"src":"/_next/static/chunks/353t7_3m287ey.js","async":true}]],["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":"$@f","v":"$10","s":"$7"}}]]
 16:X
 16:C
 19:X
 19:C
-0:{"t":{"t":{"s":"","h":49234,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/2aok-k4tri13l.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/0rrmb7737wi-z.js","async":true}]],["$","html",null,{"lang":"en","className":"dark","children":["$","body",null,{"className":"OU16Qa_className antialiased","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":"$6","s":"$7"},"c":"$Q8"},"h":{"r":["$","$1","h",{"children":[null,["$","$L12",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L14",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Debug Dojo — Python Coding Practice"}],["$","meta","1",{"name":"description","content":"Master Python with AI-powered explanations, progressive hints, and concept mastery tracking."}],["$","meta","2",{"name":"keywords","content":"python,coding,practice,AI,EdTech"}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@15","v":"$16","s":"$7"}},"a":"$@17","u":"$@18","b":"YD_0_5fwdruMe8cdEsDEh","r":"$19"}
+0:{"t":{"t":{"s":"","h":49234,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/0_41tym9c_4e_.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/1tq6ppe__m8m-.js","async":true}]],["$","html",null,{"lang":"en","className":"dark scroll-smooth","children":["$","body",null,{"className":"_9mH_6q_variable CxiPNW_variable font-sans bg-[#141414] text-[#F0EFEA] antialiased","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":"$6","s":"$7"},"c":"$Q8"},"h":{"r":["$","$1","h",{"children":[null,["$","$L12",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L14",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Debug Dojo [26] — Forensic Python Practice"}],["$","meta","1",{"name":"description","content":"DI-01 Hackathon: Master Python debugging with sandboxed execution, AI diagnostic explanations, and progressive hints."}],["$","meta","2",{"name":"keywords","content":"python,debugging,dojo,MXESA,edtech,hackathon"}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@15","v":"$16","s":"$7"}},"a":"$@17","u":"$@18","b":"ui52dM02lmSDuSOXxA-jR","r":"$19"}
 e:null
 18:false
 17:null

@@ -877,7 +877,7 @@ __turbopack_context__.s([
     "submitCode",
     ()=>submitCode
 ]);
-const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+const BASE = (("TURBOPACK compile-time value", "https://satori-1deg.onrender.com") ?? process.env.FLASK_API_URL ?? "https://satori-1deg.onrender.com").replace(/\/$/, "");
 async function apiFetch(path, init) {
     const res = await fetch(`${BASE}${path}`, {
         headers: {
