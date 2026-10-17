@@ -51,7 +51,7 @@ from typing import Any
 MAX_STDOUT_BYTES: int = 8 * 1024        # 8 KiB per test
 MAX_ERROR_BYTES:  int = 2 * 1024        # 2 KiB for error messages
 MAX_OUTPUT_REPR:  int = 512             # repr() length of actual output
-DEFAULT_TIMEOUT:  float = 5.0          # seconds per test case
+DEFAULT_TIMEOUT:  float = 3.0          # seconds per test case
 
 # Modules the learner code must NOT be able to import.
 _BLOCKED_MODULES: frozenset[str] = frozenset({
@@ -423,14 +423,29 @@ def main() -> None:
 
     executor = _SandboxedExecutor(code, fn_name)
     results: list[dict] = []
+    timeout_hit = False
 
     for tc in test_cases:
+        if timeout_hit:
+            results.append({
+                "test_id": tc.get("test_id", "unknown"),
+                "outcome": "timeout",
+                "actual_output": None,
+                "stdout": "",
+                "elapsed_ms": 0.0,
+                "error_message": "Time limit exceeded (skipped after previous test timeout).",
+                "limit_hit": "timeout",
+            })
+            continue
+
         result = executor.run_test(
             test_id=tc.get("test_id", "unknown"),
             input_args=tc.get("input_args", []),
             expected_output=tc.get("expected_output"),
             timeout=per_test_timeout,
         )
+        if result.get("outcome") == "timeout":
+            timeout_hit = True
         results.append(result)
 
     # Write results to stdout as a single JSON line
