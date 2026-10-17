@@ -6,7 +6,7 @@
       "routeType": "page",
       "response": "complete",
       "compute": "static",
-      "htmlSize": 10496,
+      "htmlSize": 14346,
       "experimentalPPR": true,
       "experimentalBypassFor": [
         {
@@ -79,7 +79,7 @@
       "routeType": "page",
       "response": "complete",
       "compute": "static",
-      "htmlSize": 8663,
+      "htmlSize": 8887,
       "experimentalPPR": true,
       "experimentalBypassFor": [
         {
@@ -113,9 +113,9 @@
     "/dashboard": {
       "renderingMode": "PARTIALLY_STATIC",
       "routeType": "page",
-      "response": "complete",
+      "response": "initial",
       "compute": "static",
-      "htmlSize": 7689,
+      "htmlSize": 8158,
       "experimentalPPR": true,
       "experimentalBypassFor": [
         {
@@ -155,7 +155,7 @@
       "routeType": "shell",
       "response": "initial",
       "compute": "static",
-      "htmlSize": 2764,
+      "htmlSize": 2875,
       "experimentalBypassFor": [
         {
           "type": "header",

@@ -9,7 +9,11 @@ import type {
   DashboardData,
 } from "@/types";
 
-const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+const BASE = (
+  process.env.NEXT_PUBLIC_API_URL ??
+  process.env.FLASK_API_URL ??
+  "https://satori-1deg.onrender.com"
+).replace(/\/$/, "");
 
 async function apiFetch<T>(
   path: string,

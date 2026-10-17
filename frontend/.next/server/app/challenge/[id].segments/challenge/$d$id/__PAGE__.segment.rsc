@@ -1,10 +1,10 @@
 1:"$Sreact.fragment"
-2:"/_next/static/chunks/0rrmb7737wi-z.js"
+2:"/_next/static/chunks/1tq6ppe__m8m-.js"
 3:I[39756,["$2"],"default"]
 4:I[37457,["$2"],"default"]
 e:I[47257,["$2"],"ClientPageRoot"]
 f:"/_next/static/chunks/04p_vbrqf_cr7.js"
-10:"/_next/static/chunks/141mwb644f_86.js"
+10:"/_next/static/chunks/2bzo4p4yfd7fa.js"
 11:I[12136,["$2","$f","$10"],"default"]
 12:I[97367,["$2"],"OutletBoundary"]
 13:"$Sreact.suspense"
@@ -12,7 +12,7 @@ f:"/_next/static/chunks/04p_vbrqf_cr7.js"
 17:I[97367,["$2"],"$16"]
 18:"MetadataBoundary"
 19:I[97367,["$2"],"$18"]
-:HL["/_next/static/chunks/2aok-k4tri13l.css","style"]
+:HL["/_next/static/chunks/0_41tym9c_4e_.css","style"]
 6:X
 6:C
 7:X
@@ -20,14 +20,14 @@ f:"/_next/static/chunks/04p_vbrqf_cr7.js"
 7:C
 a:X
 a:C
-d:[["children",{"s":"__PAGE__","h":49314,"d":{"r":["$","$1","c",{"children":[["$","$Le",null,{"Component":"$11","serverProvidedParams":null}],[["$","script","script-0",{"src":"/_next/static/chunks/04p_vbrqf_cr7.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/141mwb644f_86.js","async":true}]],["$","$L12",null,{"children":["$","$13",null,{"name":"Next.MetadataOutlet","children":"$@14"}]}]]}],"p":"$@15","v":"$a","s":"$7"}}]]
+d:[["children",{"s":"__PAGE__","h":49314,"d":{"r":["$","$1","c",{"children":[["$","$Le",null,{"Component":"$11","serverProvidedParams":null}],[["$","script","script-0",{"src":"/_next/static/chunks/04p_vbrqf_cr7.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/2bzo4p4yfd7fa.js","async":true}]],["$","$L12",null,{"children":["$","$13",null,{"name":"Next.MetadataOutlet","children":"$@14"}]}]]}],"p":"$@15","v":"$a","s":"$7"}}]]
 b:[["children",{"s":{"n":"id","t":"d","k":null,"s":[]},"h":49250,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@c","v":"$a","s":"$7"},"c":"$Qd"}]]
 8:[["children",{"s":"challenge","h":49250,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@9","v":"$a","s":"$7"},"c":"$Qb"}]]
 1b:X
 1b:C
 1e:X
 1e:C
-0:{"t":{"t":{"s":"","h":49234,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/2aok-k4tri13l.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/0rrmb7737wi-z.js","async":true}]],["$","html",null,{"lang":"en","className":"dark","children":["$","body",null,{"className":"OU16Qa_className antialiased","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":"$6","s":"$7"},"c":"$Q8"},"h":{"r":["$","$1","h",{"children":[null,["$","$L17",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L19",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$13",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Debug Dojo — Python Coding Practice"}],["$","meta","1",{"name":"description","content":"Master Python with AI-powered explanations, progressive hints, and concept mastery tracking."}],["$","meta","2",{"name":"keywords","content":"python,coding,practice,AI,EdTech"}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@1a","v":"$1b","s":"$7"}},"a":"$@1c","u":"$@1d","b":"YD_0_5fwdruMe8cdEsDEh","r":"$1e"}
+0:{"t":{"t":{"s":"","h":49234,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/0_41tym9c_4e_.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/1tq6ppe__m8m-.js","async":true}]],["$","html",null,{"lang":"en","className":"dark scroll-smooth","children":["$","body",null,{"className":"_9mH_6q_variable CxiPNW_variable font-sans bg-[#141414] text-[#F0EFEA] antialiased","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":"$6","s":"$7"},"c":"$Q8"},"h":{"r":["$","$1","h",{"children":[null,["$","$L17",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L19",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$13",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Debug Dojo [26] — Forensic Python Practice"}],["$","meta","1",{"name":"description","content":"DI-01 Hackathon: Master Python debugging with sandboxed execution, AI diagnostic explanations, and progressive hints."}],["$","meta","2",{"name":"keywords","content":"python,debugging,dojo,MXESA,edtech,hackathon"}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@1a","v":"$1b","s":"$7"}},"a":"$@1c","u":"$@1d","b":"ui52dM02lmSDuSOXxA-jR","r":"$1e"}
 14:null
 1d:false
 1c:null

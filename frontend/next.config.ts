@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
-const FLASK_API = process.env.FLASK_API_URL ?? "http://localhost:5000";
+const FLASK_API = (
+  process.env.FLASK_API_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://satori-1deg.onrender.com"
+).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
