@@ -75,8 +75,8 @@ class RunnerConfig:
     memory_mb: int = 128          # MiB of RAM (cgroup hard limit)
     cpu_fraction: float = 0.5     # fraction of one vCPU
     pids_limit: int = 64          # max OS PIDs (blocks fork bombs)
-    per_test_timeout_s: float = 5.0  # wall-clock seconds per test case
-    container_timeout_s: float = 60.0  # overall docker run wall-clock timeout
+    per_test_timeout_s: float = 3.0  # wall-clock seconds per test case
+    container_timeout_s: float = 12.0  # overall docker/subprocess run wall-clock timeout
     tmpfs_size_mb: int = 16       # writable scratch space in /tmp
 
 
@@ -390,7 +390,23 @@ class TestRunner:
                 return [], parsed["error"]
             return [], "Malformed sandbox output."
         except subprocess.TimeoutExpired:
-            return [], "Container timed out."
+            logger.warning("Subprocess runner timed out after %ss", self.config.container_timeout_s)
+            try:
+                p_data = json.loads(payload.decode("utf-8", errors="replace"))
+                return [
+                    {
+                        "test_id": tc.get("test_id", "unknown"),
+                        "outcome": "timeout",
+                        "actual_output": None,
+                        "stdout": "",
+                        "elapsed_ms": round(self.config.container_timeout_s * 1000, 2),
+                        "error_message": "Execution timed out (infinite loop or CPU limit exceeded).",
+                        "limit_hit": "timeout",
+                    }
+                    for tc in p_data.get("test_cases", [])
+                ], None
+            except Exception:
+                return [], "Execution timed out."
         except Exception as exc:
             logger.error("Subprocess runner error: %s", exc)
             return [], str(exc)
